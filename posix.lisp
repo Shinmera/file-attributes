@@ -35,6 +35,7 @@
 (defun enpath (path)
   (etypecase path
     (string path)
+    (stream (namestring (pathname path)))
     (pathname (namestring path))))
 
 (defun stat (path)

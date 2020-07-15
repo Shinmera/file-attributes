@@ -7,4 +7,10 @@
 (defpackage #:org.shirakumo.file-attributes
   (:use #:cl)
   ;; protocol.lisp
-  (:export))
+  (:export
+   #:access-time
+   #:modification-time
+   #:creation-time
+   #:group
+   #:owner
+   #:permissions))
