@@ -6,14 +6,35 @@
 
 (in-package #:org.shirakumo.file-attributes)
 
-;; Scrubbed from Linux AMD64
+;; Linux 5.7.7 AMD64
+#+linux
 (cffi:defcstruct (stat :size 144)
-  (mode  :uint32 :offset 24)
-  (uid   :uint32 :offset 28)
-  (gid   :uint32 :offset 32)
-  (size  :uint64 :offset 48)
-  (atime :uint64 :offset 72)
-  (mtime :uint64 :offset 88))
+  (mode    :uint32 :offset 24)
+  (uid     :uint32 :offset 28)
+  (gid     :uint32 :offset 32)
+  (size    :uint64 :offset 48)
+  (atime   :uint64 :offset 72)
+  (mtime   :uint64 :offset 88))
+
+;; OS X 10.14
+#+darwin
+(cffi:defcstruct (stat :size 144)
+  (mode    :uint16 :offset  4)
+  (uid     :uint32 :offset 16)
+  (gid     :uint32 :offset 20)
+  (atime   :uint64 :offset 32)
+  (mtime   :uint64 :offset 48)
+  (size    :uint64 :offset 96))
+
+;; FreeBSD 12.1
+#+freebsd
+(cffi:defcstruct (stat :size 224)
+  (mode    :uint16 :offset 24)
+  (uid     :uint32 :offset 28)
+  (gid     :uint32 :offset 32)
+  (size    :uint64 :offset 112)
+  (atime   :uint64 :offset 48)
+  (mtime   :uint64 :offset 64))
 
 (cffi:defcfun (cstat "stat") :int
   (path :string)
