@@ -26,7 +26,7 @@
   (mtime   :uint64 :offset 48)
   (size    :uint64 :offset 96))
 
-;; FreeBSD 12.1
+;; FreeBSD 12.1 AMD64
 #+freebsd
 (cffi:defcstruct (stat :size 224)
   (mode    :uint16 :offset 24)
