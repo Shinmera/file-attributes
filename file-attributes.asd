@@ -16,8 +16,8 @@
   :serial T
   :components ((:file "package")
                (:file "protocol")
-               (:file "posix" :if-feature :posix)
+               (:file "posix" :if-feature :unix)
+               (:file "linux" :if-feature :linux)
                (:file "documentation"))
   :depends-on (:documentation-utils
                :cffi))
-

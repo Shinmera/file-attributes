@@ -29,3 +29,12 @@
 (define-implementable (setf owner) (value file))
 (define-implementable permissions (file))
 (define-implementable (setf permissions) (value file))
+
+(defun decode-permissions (permissions))
+(defun encode-permissions (permissions))
+
+(defun enpath (path)
+  (etypecase path
+    (string path)
+    (stream (namestring (pathname path)))
+    (pathname (namestring path))))

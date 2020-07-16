@@ -32,11 +32,11 @@
   (path :string)
   (mode :uint32))
 
-(defun enpath (path)
-  (etypecase path
-    (string path)
-    (stream (namestring (pathname path)))
-    (pathname (namestring path))))
+(defun unix->universal (unix)
+  (+ unix (encode-universal-time 0 0 0 1 1 1970 0)))
+
+(defun universal->unix (universal)
+  (- universal (encode-universal-time 0 0 0 1 1 1970 0)))
 
 (defun stat (path)
   (cffi:with-foreign-object (ptr '(:struct stat))
@@ -57,12 +57,6 @@
 (defun chmod (path mode)
   (cchmod (enpath path) mode))
 
-(defun unix->universal (unix)
-  (+ unix (encode-universal-time 0 0 0 1 1 1970 0)))
-
-(defun universal->unix (universal)
-  (- universal (encode-universal-time 0 0 0 1 1 1970 0)))
-
 (define-implementation access-time (file)
   (unix->universal (getf (stat file) 'atime)))
 
@@ -76,12 +70,6 @@
 (define-implementation (setf modification-time) (value file)
   (utimes file (access-time file) value)
   value)
-
-(define-implementation creation-time (file)
-  )
-
-(define-implementation (setf creation-time) (value file)
-  )
 
 (define-implementation group (file)
   (getf (stat file) :gid))
