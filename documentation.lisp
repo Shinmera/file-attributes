@@ -41,20 +41,23 @@ The user is expressed as a positive integer.
 Signals an error if retrieving or setting the information is not
 possible.")
   
-  (function permissions
-    "Accesses the access permissions flag of this file.
+  (function attributes
+    "Accesses the attributes of this file.
 
-The permissions are expressed as a positive integer.
+The attributes are expressed as a positive integer.
 
 Signals an error if retrieving or setting the information is not
 possible.
 
+The contents of the file attributes are highly system specific and may
+contain things such as user permissions or file kind information.
+
 See ENCODE-PERMISSIONS
 See DECODE-PERMISSIONS")
 
-  (function encode-permissions
+  (function encode-attributes
     "")
 
-  (function decode-permissions
+  (function decode-attributes
     ""))
 

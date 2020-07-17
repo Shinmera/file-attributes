@@ -27,11 +27,11 @@
 (define-implementable (setf group) (value file))
 (define-implementable owner (file))
 (define-implementable (setf owner) (value file))
-(define-implementable permissions (file))
-(define-implementable (setf permissions) (value file))
+(define-implementable attributes (file))
+(define-implementable (setf attributes) (value file))
 
-(defun decode-permissions (permissions))
-(defun encode-permissions (permissions))
+(defun decode-attributes (attributes))
+(defun encode-attributes (attributes))
 
 (defun enpath (path)
   (etypecase path

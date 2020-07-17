@@ -106,8 +106,8 @@
   (chown file value (group file))
   value)
 
-(define-implementation permissions (file)
+(define-implementation attributes (file)
   (getf (stat file) :mode))
 
-(define-implementation (setf permissions) (value file)
+(define-implementation (setf attributes) (value file)
   (chmod file value))
