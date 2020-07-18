@@ -13,4 +13,7 @@
    #:creation-time
    #:group
    #:owner
-   #:permissions))
+   #:attributes
+   #:*system*
+   #:encode-attributes
+   #:decode-attributes))

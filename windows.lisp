@@ -147,7 +147,6 @@
       pointer)))
 
 (defun open-file (path mode)
-  ;; FIXME: ensure path is translated to pointer properly.
   (let ((string (string->wstring (enpath path))))
     (unwind-protect
          (let ((handle (create-file string mode FILE-SHARE-ALL (cffi:null-pointer)

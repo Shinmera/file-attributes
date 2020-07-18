@@ -52,12 +52,57 @@ possible.
 The contents of the file attributes are highly system specific and may
 contain things such as user permissions or file kind information.
 
-See ENCODE-PERMISSIONS
-See DECODE-PERMISSIONS")
+See ENCODE-ATTRIBUTES
+See DECODE-ATTRIBUTES")
+
+  (variable *system*
+    "The default system as recognised through feature flags.")
 
   (function encode-attributes
-    "")
+    "Encodes a plist of file attributes into an integer suitable for the requested system.
+
+See DECODE-ATTRIBUTES
+See *SYSTEM*")
 
   (function decode-attributes
-    ""))
+    "Decodes an integer for attributes of the requested system into a standardised plist of file attributes.
+
+Which flags are be produced is highly dependent on the system, but the
+following may appear:
+
+  :ARCHIVED
+  :COMPRESSED
+  :DEVICE
+  :DIRECTORY
+  :ENCRYPTED
+  :FIFO
+  :GROUP-EXECUTE
+  :GROUP-READ
+  :GROUP-WRITE
+  :HIDDEN
+  :INTEGRITY
+  :LINK
+  :NO-SCRUB
+  :NORMAL
+  :NOT-INDEXED
+  :OFFLINE
+  :OTHER-EXECUTE
+  :OTHER-READ
+  :OTHER-WRITE
+  :OWNER-EXECUTE
+  :OWNER-READ
+  :OWNER-WRITE
+  :READ-ONLY
+  :RECALL
+  :SET-GROUP
+  :SET-USER
+  :SOCKET
+  :SPARSE
+  :STICKY
+  :SYSTEM-FILE
+  :TEMPORARY
+  :VIRTUAL
+
+See ENCODE-ATTRIBUTES
+See *SYSTEM*"))
 
