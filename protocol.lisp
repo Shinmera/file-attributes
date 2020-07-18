@@ -68,14 +68,14 @@
              (setf (ldb (byte 1 i) int) 1))
         finally (return int)))
 
-(defun decode-attributes (attributes &key (system *system*))
+(defun decode-attributes (attributes &optional (system *system*))
   (case system
     (:unix
      (decode-bitfield attributes *unix-attributes*))
     (:windows
      (decode-bitfield attributes *windows-attributes*))))
 
-(defun encode-attributes (attributes &key (system *system*))
+(defun encode-attributes (attributes &optional (system *system*))
   (case system
     (:unix
      (encode-attributes attributes *unix-attributes*))
