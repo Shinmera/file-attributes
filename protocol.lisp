@@ -30,8 +30,57 @@
 (define-implementable attributes (file))
 (define-implementable (setf attributes) (value file))
 
-(defun decode-attributes (attributes))
-(defun encode-attributes (attributes))
+(defun enbitfield (list &rest bits)
+  (let ((int 0))
+    (loop for i from 0
+          for bit in bits
+          do (when (find bit list) (setf (ldb (byte 1 i) int) 1)))
+    int))
+
+(defun debitfield (int &rest bits)
+  (loop for i from 0
+        for bit in bits
+        when (logbitp i int)
+        collect bit))
+
+(defvar *system*
+  #+unix :unix
+  #+windows :windows
+  #-(or unix windows) :unknown)
+
+(defvar *windows-attributes*
+  '(:read-only :hidden :system-file NIL :directory :archived :device :normal :temporary :sparse :link :compressed :offline :not-indexed :encrypted :integrity :virtual :no-scrub :recall))
+
+(defvar *unix-attributes*
+  '(:other-read :other-write :other-execute :group-read :group-write :group-execute :owner-read :owner-write :owner-execute :sticky :set-group :set-user :fifo :device :directory :normal :link :socket))
+
+(defun decode-bitfield (int bits)
+  (loop for i from 0
+        for bit in bits
+        when bit collect bit
+        when bit collect (logbitp i int)))
+
+(defun encode-bitfield (field bits)
+  (loop with int = 0
+        for i from 0
+        for bit in bits
+        do (when (getf field bit)
+             (setf (ldb (byte 1 i) int) 1))
+        finally (return int)))
+
+(defun decode-attributes (attributes &key (system *system*))
+  (case system
+    (:unix
+     (decode-bitfield attributes *unix-attributes*))
+    (:windows
+     (decode-bitfield attributes *windows-attributes*))))
+
+(defun encode-attributes (attributes &key (system *system*))
+  (case system
+    (:unix
+     (encode-attributes attributes *unix-attributes*))
+    (:windows
+     (encode-attributes attributes *windows-attributes*))))
 
 (defun enpath (path)
   (etypecase path
