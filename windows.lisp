@@ -6,6 +6,7 @@
 
 (in-package #:org.shirakumo.file-attributes)
 
+(defconstant CP-UTF8 65001)
 (defconstant GENERIC-READ   #x80000000)
 (defconstant GENERIC-WRITE  #x40000000)
 (defconstant FILE-SHARE-ALL #x00000007)
@@ -110,13 +111,51 @@
 (cffi:defcfun (get-file-attributes "GetFileAttributesW") dword
   (filename :pointer))
 
+(cffi:defcfun (set-file-attributes "SetFileAttributesW") :bool
+  (filename :pointer)
+  (attributes dword))
+
+(cffi:defcfun (wide-char-to-multi-byte "WideCharToMultiByte") :int
+  (code-page :uint)
+  (flags dword)
+  (wide-char-str :pointer)
+  (wide-char :int)
+  (multi-byte-str :pointer)
+  (multi-byte :int)
+  (default-char :pointer)
+  (used-default-char :pointer))
+
+(cffi:defcfun (multi-byte-to-wide-char "MultiByteToWideChar") :int
+  (code-page :uint)
+  (flags dword)
+  (multi-byte-str :pointer)
+  (multi-byte :int)
+  (wide-char-str :pointer)
+  (wide-char :int))
+
+(defun wstring->string (pointer &optional (chars -1))
+  (let ((bytes (wide-char-to-multi-byte CP-UTF8 0 pointer chars (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
+    (cffi:with-foreign-object (string :uchar bytes)
+      (wide-char-to-multi-byte CP-UTF8 0 pointer chars string bytes (cffi:null-pointer) (cffi:null-pointer))
+      (cffi:foreign-string-to-lisp string :encoding :utf-8))))
+
+(defun string->wstring (string)
+  (cffi:with-foreign-string (string string)
+    (let* ((chars (multi-byte-to-wide-char CP-UTF8 0 string -1 (cffi:null-pointer) 0))
+           (pointer (cffi:foreign-alloc :uint16 :count chars)))
+      (multi-byte-to-wide-char CP-UTF8 0 string -1 pointer chars)
+      pointer)))
+
 (defun open-file (path mode)
   ;; FIXME: ensure path is translated to pointer properly.
-  (let ((handle (create-file (enpath path) mode FILE-SHARE-ALL (cffi:null-pointer)
-                             OPEN-EXISTING FILE-ATTRIBUTE-NORMAL (cffi:null-pointer))))
-    (if (/= -1 handle)
-        handle
-        (error "CreateFile failed."))))
+  (let ((string (string->wstring (enpath path))))
+    (unwind-protect
+         (let ((handle (create-file string mode FILE-SHARE-ALL (cffi:null-pointer)
+                                    OPEN-EXISTING FILE-ATTRIBUTE-NORMAL 0)))
+           (if (/= -1 handle)
+               handle
+               (error "CreateFile failed.")))
+      (cffi:foreign-free string))))
 
 (defmacro with-file ((file path mode) &body body)
   `(let ((,file (open-file ,path ,mode)))
@@ -176,9 +215,9 @@
   (with-file (file file GENERIC-READ)
     (cffi:with-foreign-objects ((user '(:struct sid))
                                 (attribs :pointer))
-      (cond ((= 0 (get-security-info handle FILE-OBJECT OWNER-SECURITY-INFORMATION user (cffi:null-pointer)
+      (cond ((= 0 (get-security-info file FILE-OBJECT OWNER-SECURITY-INFORMATION user (cffi:null-pointer)
                                      (cffi:null-pointer) (cffi:null-pointer) attribs))
-             (local-free attribs)
+             (local-free (cffi:mem-ref attribs :pointer))
              (sid-sub-authority user))
             (T
              (error "GetSecurityInfo failed."))))))
@@ -186,7 +225,7 @@
 (define-implementation (setf user) (user file)
   (with-file (file file GENERIC-WRITE)
     (cffi:with-foreign-objects ((user '(:struct sid))
-                                (authority byte :count 6))
+                                (authority byte 6))
       (setf (cffi:mem-aref authority 'byte 6) 5)
       (unless (allocate-sid authority 1 user 0 0 0 0 0 0 0 user)
         (error "AllocateAndInitializeSid failed."))
@@ -201,7 +240,7 @@
                                 (attribs :pointer))
       (cond ((= 0 (get-security-info file FILE-OBJECT GROUP-SECURITY-INFORMATION (cffi:null-pointer) group
                                      (cffi:null-pointer) (cffi:null-pointer) attribs))
-             (local-free attribs)
+             (local-free (cffi:mem-ref attribs :pointer))
              (sid-sub-authority group))
             (T
              (error "GetSecurityInfo failed."))))))
@@ -209,7 +248,7 @@
 (define-implementation (setf group) (group file)
   (with-file (file file GENERIC-WRITE)
     (cffi:with-foreign-objects ((group '(:struct sid))
-                                (authority byte :count 6))
+                                (authority byte 6))
       (setf (cffi:mem-aref authority 'byte 6) 5)
       (unless (allocate-sid authority 1 group 0 0 0 0 0 0 0 group)
         (error "AllocateAndInitializeSid failed."))
@@ -219,12 +258,18 @@
       group)))
 
 (define-implementation attributes (file)
-  (let ((attributes (get-file-attributes (enpath file))))
-    (if (= attributes #xFFFFFFFF)
-        (error "GetFileAttributes failed.")
-        attributes)))
+  (let ((string (string->wstring (enpath file))))
+    (unwind-protect
+         (let ((attributes (get-file-attributes string)))
+           (if (= attributes #xFFFFFFFF)
+               (error "GetFileAttributes failed.")
+               attributes))
+      (cffi:foreign-free string))))
 
 (define-implementation (setf attributes) (value file)
-  (if (set-file-attributes (enpath file) value)
-      value
-      (error "SetFileAttributes failed.")))
+  (let ((string (string->wstring (enpath file))))
+    (unwind-protect
+         (if (set-file-attributes string value)
+             value
+             (error "SetFileAttributes failed."))
+      (cffi:foreign-free string))))
