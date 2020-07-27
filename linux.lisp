@@ -52,20 +52,21 @@
         (cffi:mem-ref statx '(:struct statx))
         (error "Statx failed"))))
 
-(define-implementation access-time (file)
-  (unix->universal (getf (getf (statx file STATX-ATIME) 'atime) 'sec)))
+(when (cffi:foreign-symbol-pointer "statx")
+  (define-implementation access-time (file)
+    (unix->universal (getf (getf (statx file STATX-ATIME) 'atime) 'sec)))
 
-(define-implementation modification-time (file)
-  (unix->universal (getf (getf (statx file STATX-MTIME) 'mtime) 'sec)))
+  (define-implementation modification-time (file)
+    (unix->universal (getf (getf (statx file STATX-MTIME) 'mtime) 'sec)))
 
-(define-implementation creation-time (file)
-  (unix->universal (getf (getf (statx file STATX-BTIME) 'btime) 'sec)))
+  (define-implementation creation-time (file)
+    (unix->universal (getf (getf (statx file STATX-BTIME) 'btime) 'sec)))
 
-(define-implementation group (file)
-  (getf (statx file STATX-GID) 'gid))
+  (define-implementation group (file)
+    (getf (statx file STATX-GID) 'gid))
 
-(define-implementation owner (file)
-  (getf (statx file STATX-UID) 'uid))
+  (define-implementation owner (file)
+    (getf (statx file STATX-UID) 'uid))
 
-(define-implementation attributes (file)
-  (getf (statx file STATX-MODE) 'mode))
+  (define-implementation attributes (file)
+    (getf (statx file STATX-MODE) 'mode)))
