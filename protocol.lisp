@@ -34,7 +34,7 @@
   (let ((int 0))
     (loop for i from 0
           for bit in bits
-          do (when (find bit list) (setf (ldb (byte 1 i) int) 1)))
+          do (when (find bit list) (setf (ldb (cl:byte 1 i) int) 1)))
     int))
 
 (defun debitfield (int &rest bits)
@@ -65,7 +65,7 @@
         for i from 0
         for bit in bits
         do (when (getf field bit)
-             (setf (ldb (byte 1 i) int) 1))
+             (setf (ldb (cl:byte 1 i) int) 1))
         finally (return int)))
 
 (defun decode-attributes (attributes &optional (system *system*))
