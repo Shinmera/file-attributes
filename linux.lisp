@@ -7,6 +7,11 @@
 (in-package #:org.shirakumo.file-attributes)
 
 (defconstant AT-FDCWD -100)
+(defconstant STATX-MODE  #x00000002)
+(defconstant STATX-UID   #x00000008)
+(defconstant STATX-GID   #x00000010)
+(defconstant STATX-ATIME #x00000020)
+(defconstant STATX-MTIME #x00000040)
 (defconstant STATX-BTIME #x00000800)
 
 (cffi:defcfun (cstatx "statx") :int
@@ -41,11 +46,26 @@
   (dev_major :uint32)
   (dev_minor :uint32))
 
-(defun statx (path)
+(defun statx (path mask)
   (cffi:with-foreign-object (statx '(:struct statx))
-    (if (= 0 (cstatx AT-FDCWD (enpath path) 0 STATX-BTIME statx))
+    (if (= 0 (cstatx AT-FDCWD (enpath path) 0 mask statx))
         (cffi:mem-ref statx '(:struct statx))
         (error "Statx failed"))))
 
+(define-implementation access-time (file)
+  (unix->universal (getf (getf (statx file STATX-ATIME) 'atime) 'sec)))
+
+(define-implementation modification-time (file)
+  (unix->universal (getf (getf (statx file STATX-MTIME) 'mtime) 'sec)))
+
 (define-implementation creation-time (file)
-  (unix->universal (getf (getf (statx file) 'btime) 'sec)))
+  (unix->universal (getf (getf (statx file STATX-BTIME) 'btime) 'sec)))
+
+(define-implementation group (file)
+  (getf (statx file STATX-GID) 'gid))
+
+(define-implementation owner (file)
+  (getf (statx file STATX-UID) 'uid))
+
+(define-implementation attributes (file)
+  (getf (statx file STATX-MODE) 'mode))
