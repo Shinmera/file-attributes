@@ -6,6 +6,7 @@
 
 (defpackage #:org.shirakumo.file-attributes
   (:use #:cl)
+  (:shadow #:byte)
   ;; protocol.lisp
   (:export
    #:access-time
