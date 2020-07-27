@@ -78,9 +78,11 @@
 (defun encode-attributes (attributes &optional (system *system*))
   (case system
     (:unix
-     (encode-attributes attributes *unix-attributes*))
+     (encode-bitfield attributes *unix-attributes*))
     (:windows
-     (encode-attributes attributes *windows-attributes*))))
+     (encode-bitfield attributes *windows-attributes*))
+    (T
+     0)))
 
 (defun enpath (path)
   (etypecase path

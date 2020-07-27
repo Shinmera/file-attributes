@@ -93,21 +93,21 @@
   value)
 
 (define-implementation group (file)
-  (getf (stat file) :gid))
+  (getf (stat file) 'gid))
 
 (define-implementation (setf group) (value file)
   (chown file (owner file) value)
   value)
 
 (define-implementation owner (file)
-  (getf (stat file) :uid))
+  (getf (stat file) 'uid))
 
 (define-implementation (setf owner) (value file)
   (chown file value (group file))
   value)
 
 (define-implementation attributes (file)
-  (getf (stat file) :mode))
+  (getf (stat file) 'mode))
 
 (define-implementation (setf attributes) (value file)
   (chmod file value))
