@@ -20,6 +20,7 @@
                (:file "posix" :if-feature :unix)
                (:file "linux" :if-feature :linux)
                (:file "windows" :if-feature :windows)
+               (:file "mezzano" :if-feature :mezzano)
                (:file "documentation"))
   :depends-on (:documentation-utils
                :cffi))
