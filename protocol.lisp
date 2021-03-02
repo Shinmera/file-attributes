@@ -53,7 +53,7 @@
   '(:read-only :hidden :system-file NIL :directory :archived :device :normal :temporary :sparse :link :compressed :offline :not-indexed :encrypted :integrity :virtual :no-scrub :recall))
 
 (defvar *unix-attributes*
-  '(:other-read :other-write :other-execute :group-read :group-write :group-execute :owner-read :owner-write :owner-execute :sticky :set-group :set-user :fifo :device :directory :normal :link :socket))
+  '(:other-execute :other-write :other-read :group-execute :group-write :group-read :owner-execute :owner-write :owner-read :sticky :set-group :set-user :fifo :device :directory :normal :link :socket))
 
 (defun decode-bitfield (int bits)
   (loop for i from 0
