@@ -95,6 +95,6 @@
 
 (defun enpath (path)
   (etypecase path
-    (string path)
-    (stream (namestring (pathname path)))
-    (pathname (namestring path))))
+    (string (namestring (truename path)))
+    (stream (namestring (truename (pathname path))))
+    (pathname (namestring (truename path)))))
