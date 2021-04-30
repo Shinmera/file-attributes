@@ -36,7 +36,11 @@
   (atime   :uint64 :offset 48)
   (mtime   :uint64 :offset 64))
 
-(cffi:defcfun (cstat "stat") :int
+(cffi:defcfun (cgstat "stat") :int
+  (path :string)
+  (buffer :pointer))
+
+(cffi:defcfun (cxstat "__xstat") :int
   (path :string)
   (buffer :pointer))
 
@@ -58,6 +62,14 @@
 
 (defun universal->unix (universal)
   (- universal (encode-universal-time 0 0 0 1 1 1970 0)))
+
+(defun cstat (path buffer)
+  (cond ((cffi:foreign-symbol-pointer "stat")
+         (cgstat path buffer))
+        ((cffi:foreign-symbol-pointer "__xstat")
+         (cxstat path buffer))
+        (T
+         1)))
 
 (defun stat (path)
   (cffi:with-foreign-object (ptr '(:struct stat))
