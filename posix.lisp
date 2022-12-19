@@ -36,6 +36,16 @@
   (atime   :uint64 :offset 48)
   (mtime   :uint64 :offset 64))
 
+;; OpenBSD 7.1 AMD64
+#+openbsd
+(cffi:defcstruct (stat :size 128)
+  (mode    :uint32 :offset  0)
+  (uid     :uint32 :offset 20)
+  (gid     :uint32 :offset 24)
+  (size    :uint64 :offset 80)
+  (atime   :uint64 :offset 32)
+  (mtime   :uint64 :offset 48))
+
 (cffi:defcfun (cgstat "stat") :int
   (path :string)
   (buffer :pointer))
