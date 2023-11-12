@@ -6,6 +6,7 @@
 (defconstant FILE-SHARE-ALL #x00000007)
 (defconstant OPEN-EXISTING  3)
 (defconstant FILE-ATTRIBUTE-NORMAL #x80)
+(defconstant FILE-FLAG-BACKUP-SEMANTICS #x2000000)
 (defconstant FILE-OBJECT #x1)
 (defconstant OWNER-SECURITY-INFORMATION #x1)
 (defconstant GROUP-SECURITY-INFORMATION #x2)
@@ -140,18 +141,20 @@
       (multi-byte-to-wide-char CP-UTF8 0 string -1 pointer chars)
       pointer)))
 
-(defun open-file (path mode)
-  (let ((string (string->wstring (enpath path))))
+(defun open-file (path mode &key flags)
+  (let ((string (string->wstring (enpath path)))
+	(attributes-and-flags (logior FILE-ATTRIBUTE-NORMAL
+				      (or flags 0))))
     (unwind-protect
          (let ((handle (create-file string mode FILE-SHARE-ALL (cffi:null-pointer)
-                                    OPEN-EXISTING FILE-ATTRIBUTE-NORMAL 0)))
+                                    OPEN-EXISTING attributes-and-flags 0)))
            (if (/= -1 handle)
                handle
                (error "CreateFile failed.")))
       (cffi:foreign-free string))))
 
-(defmacro with-file ((file path mode) &body body)
-  `(let ((,file (open-file ,path ,mode)))
+(defmacro with-file ((file path mode &key flags) &body body)
+  `(let ((,file (open-file ,path ,mode :flags ,flags)))
      (unwind-protect (progn ,@body)
        (close-file ,file))))
 
@@ -182,7 +185,7 @@
 
 (defmacro define-time-reader (name args)
   `(define-implementation ,name (file)
-     (with-file (file file GENERIC-READ)
+     (with-file (file file GENERIC-READ :flags FILE-FLAG-BACKUP-SEMANTICS)
        (cffi:with-foreign-object (filetime '(:struct filetime))
          (if (get-file-time file ,@args)
              (filetime->universal filetime)
@@ -190,7 +193,7 @@
 
 (defmacro define-time-writer (name args)
   `(define-implementation (setf ,name) (value file)
-     (with-file (file file GENERIC-WRITE)
+     (with-file (file file GENERIC-WRITE :flags FILE-FLAG-BACKUP-SEMANTICS)
        (cffi:with-foreign-object (filetime '(:struct filetime))
          (universal->filetime value filetime)
          (if (set-file-time file ,@args)
