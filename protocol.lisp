@@ -70,8 +70,8 @@
     (:windows
      (decode-bitfield attributes *windows-attributes*))
     (:mezzano
-     (append (decode-attributes (ldb (byte 16  0) attributes) :unix)
-             (decode-attributes (ldb (byte 16 16) attributes) :windows)))))
+     (append (decode-attributes (ldb (cl:byte 16  0) attributes) :unix)
+             (decode-attributes (ldb (cl:byte 16 16) attributes) :windows)))))
 
 (defun encode-attributes (attributes &optional (system *system*))
   (case system
@@ -81,8 +81,8 @@
      (encode-bitfield attributes *windows-attributes*))
     (:mezzano
      (let ((i 0))
-       (setf (ldb (byte 16  0) i) (encode-attributes attributes :unix))
-       (setf (ldb (byte 16 16) i) (encode-attributes attributes :windows))
+       (setf (ldb (cl:byte 16  0) i) (encode-attributes attributes :unix))
+       (setf (ldb (cl:byte 16 16) i) (encode-attributes attributes :windows))
        i))
     (T
      0)))
