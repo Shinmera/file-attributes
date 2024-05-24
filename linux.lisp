@@ -7,6 +7,7 @@
 (defconstant STATX-ATIME #x00000020)
 (defconstant STATX-MTIME #x00000040)
 (defconstant STATX-BTIME #x00000800)
+(defconstant STATX-ALL (logior STATX-MODE STATX-UID STATX-GID STATX-ATIME STATX-MTIME STATX-BTIME))
 
 (cffi:defcfun (cstatx "statx") :int
   (dirfd :int)
@@ -42,11 +43,15 @@
   (mount-id :uint64)
   (spare :uint64 :count 13))
 
+(defmacro with-statx ((ptr path mask) &body body)
+  `(cffi:with-foreign-object (,ptr '(:struct statx))
+     (if (= 0 (cstatx AT-FDCWD (enpath ,path) 0 ,mask ,ptr))
+         (progn ,@body)
+         (error "Statx failed"))))
+
 (defun statx (path mask)
-  (cffi:with-foreign-object (statx '(:struct statx))
-    (if (= 0 (cstatx AT-FDCWD (enpath path) 0 mask statx))
-        (cffi:mem-ref statx '(:struct statx))
-        (error "Statx failed"))))
+  (with-statx (statx path mask)
+    (cffi:mem-ref statx '(:struct statx))))
 
 (when (cffi:foreign-symbol-pointer "statx")
   (define-implementation access-time (file)
@@ -65,4 +70,14 @@
     (getf (statx file STATX-UID) 'uid))
 
   (define-implementation attributes (file)
-    (getf (statx file STATX-MODE) 'mode)))
+    (getf (statx file STATX-MODE) 'mode))
+
+  (define-implementation make-stat (file)
+    (with-statx (statx file STATX-ALL)
+      (cffi:with-foreign-slots ((uid gid mode atime mtime btime) statx (:struct statx))
+        (make-stat-result :access-time (unix->universal (getf atime 'sec))
+                          :modification-time (unix->universal (getf mtime 'sec))
+                          :creation-time (unix->universal (getf btime 'sec))
+                          :group gid
+                          :owner uid
+                          :attributes mode)))))

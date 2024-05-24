@@ -75,11 +75,15 @@
         (T
          1)))
 
+(defmacro with-stat ((ptr path) &body body)
+  `(cffi:with-foreign-object (,ptr '(:struct stat))
+     (if (= 0 (cstat (enpath ,path) ,ptr))
+         (progn ,@body)
+         (error "Stat failed."))))
+
 (defun stat (path)
-  (cffi:with-foreign-object (ptr '(:struct stat))
-    (if (= 0 (cstat (enpath path) ptr))
-        (cffi:mem-ref ptr '(:struct stat))
-        (error "Stat failed."))))
+  (with-stat (ptr path)
+    (cffi:mem-ref ptr '(:struct stat))))
 
 (defun utimes (path atime mtime)
   (cffi:with-foreign-object (ptr :long 4)
@@ -127,3 +131,18 @@
 
 (define-implementation (setf attributes) (value file)
   (chmod file value))
+
+(define-implementation make-stat (file)
+  (with-stat (ptr file)
+    (cffi:with-foreign-slots ((mode uid gid atime mtime) ptr (:struct stat))
+      (make-stat-result :access-time (unix->universal (getf atime 'sec))
+                        :modification-time (unix->universal (getf mtime 'sec))
+                        :creation-time -1 ; cant get btime from posix stat, is this return ok?
+                        :group gid
+                        :owner uid
+                        :attributes mode))))
+
+;; regarding btime:
+;; it's not ideal to not provide btime on unrecognized posix systems. As an alternative to just setting
+;; 0 or 1, we might be able to implement `stat-result' as a proper clos class, and set the default
+;; getter method for non-uniformly-implementable fields to raise an error condition.
