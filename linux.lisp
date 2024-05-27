@@ -1,6 +1,7 @@
 (in-package #:org.shirakumo.file-attributes)
 
 (defconstant AT-FDCWD -100)
+(defconstant AT-SYMLINK-NOFOLLOW #x100)
 (defconstant STATX-MODE  #x00000002)
 (defconstant STATX-UID   #x00000008)
 (defconstant STATX-GID   #x00000010)
@@ -45,7 +46,7 @@
 
 (defmacro with-statx ((ptr path mask) &body body)
   `(cffi:with-foreign-object (,ptr '(:struct statx))
-     (if (= 0 (cstatx AT-FDCWD (enpath ,path) 0 ,mask ,ptr))
+     (if (= 0 (cstatx AT-FDCWD (enpath ,path) AT-SYMLINK-NOFOLLOW ,mask ,ptr))
          (progn ,@body)
          (error "Statx failed"))))
 
