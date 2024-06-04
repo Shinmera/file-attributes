@@ -38,3 +38,14 @@
 
 (define-implementation (setf attributes) (value file)
   (apply #'mezzano.file-system:set-file-properties file (decode-attributes value :mezzano)))
+
+(define-implementation stat-file (file)
+  (let ((props (mezzano.file-system:file-properties file)))
+    (make-stat-result :access-time (getf props :access-date)
+                      :modification-time (getf props :write-date)
+                      :creation-time (or (getf props :creation-date)
+                                         (getf props :write-date))
+                      :group (getf props :guid 0)
+                      :owner (or (getf props :uid)
+                                 (sxhash (getf props :author "")))
+                      :attributes (encode-attributes props :mezzano))))
