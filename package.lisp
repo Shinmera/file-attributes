@@ -12,11 +12,11 @@
    #:*system*
    #:encode-attributes
    #:decode-attributes
-   #:stat-file
-   #:stat-result
-   #:st-access-time
-   #:st-modification-time
-   #:st-creation-time
-   #:st-group
-   #:st-owner
-   #:st-attributes))
+   #:all-fields
+   #:fields
+   #:fields-access-time
+   #:fields-modification-time
+   #:fields-creation-time
+   #:fields-group
+   #:fields-owner
+   #:fields-attributes))

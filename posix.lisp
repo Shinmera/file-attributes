@@ -132,7 +132,7 @@
 (define-implementation (setf attributes) (value file)
   (chmod file value))
 
-(define-implementation make-stat (file)
+(define-implementation all-fields (file)
   (with-stat (ptr file)
     (cffi:with-foreign-slots ((mode uid gid atime mtime) ptr (:struct stat))
       (make-stat-result :access-time (unix->universal (getf atime 'sec))

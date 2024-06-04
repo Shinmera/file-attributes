@@ -73,12 +73,12 @@
   (define-implementation attributes (file)
     (getf (statx file STATX-MODE) 'mode))
 
-  (define-implementation make-stat (file)
+  (define-implementation all-fields (file)
     (with-statx (statx file STATX-ALL)
       (cffi:with-foreign-slots ((uid gid mode atime mtime btime) statx (:struct statx))
-        (make-stat-result :access-time (unix->universal (getf atime 'sec))
-                          :modification-time (unix->universal (getf mtime 'sec))
-                          :creation-time (unix->universal (getf btime 'sec))
-                          :group gid
-                          :owner uid
-                          :attributes mode)))))
+        (make-fields :access-time (unix->universal (getf atime 'sec))
+                     :modification-time (unix->universal (getf mtime 'sec))
+                     :creation-time (unix->universal (getf btime 'sec))
+                     :group gid
+                     :owner uid
+                     :attributes mode)))))

@@ -23,9 +23,9 @@
 (define-implementable (setf owner) (value file))
 (define-implementable attributes (file))
 (define-implementable (setf attributes) (value file))
-(define-implementable stat-file (file))
+(define-implementable all-fields (file))
 
-(defstruct (stat-result (:conc-name st-))
+(defstruct fields
   (access-time 0 :type integer)
   (modification-time 0 :type integer)
   (creation-time 0 :type integer)
