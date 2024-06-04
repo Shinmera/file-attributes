@@ -137,12 +137,7 @@
     (cffi:with-foreign-slots ((mode uid gid atime mtime) ptr (:struct stat))
       (make-stat-result :access-time (unix->universal (getf atime 'sec))
                         :modification-time (unix->universal (getf mtime 'sec))
-                        :creation-time -1 ; cant get btime from posix stat, is this return ok?
+                        :creation-time 0
                         :group gid
                         :owner uid
                         :attributes mode))))
-
-;; regarding btime:
-;; it's not ideal to not provide btime on unrecognized posix systems. As an alternative to just setting
-;; 0 or 1, we might be able to implement `stat-result' as a proper clos class, and set the default
-;; getter method for non-uniformly-implementable fields to raise an error condition.
