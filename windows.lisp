@@ -143,8 +143,8 @@
 
 (defun open-file (path mode &key flags)
   (let ((string (string->wstring (enpath path)))
-	(attributes-and-flags (logior FILE-ATTRIBUTE-NORMAL
-				      (or flags 0))))
+        (attributes-and-flags (logior FILE-ATTRIBUTE-NORMAL
+                                      (or flags 0))))
     (unwind-protect
          (let ((handle (create-file string mode FILE-SHARE-ALL (cffi:null-pointer)
                                     OPEN-EXISTING attributes-and-flags 0)))
@@ -269,3 +269,32 @@
              value
              (error "SetFileAttributes failed."))
       (cffi:foreign-free string))))
+
+(define-implementation all-fields (file)
+  (cffi:with-foreign-objects ((creation-time '(:struct filetime))
+                              (access-time '(:struct filetime))
+                              (modification-time '(:struct filetime))
+                              (user '(:struct sid))
+                              (group '(:struct sid))
+                              (security-attribs :pointer))
+    (with-file (file file GENERIC-READ)
+      (unless (= 0 (get-security-info file FILE-OBJECT OWNER-SECURITY-INFORMATION user group
+                                      (cffi:null-pointer) (cffi:null-pointer) security-attribs))
+        (error "GetSecurityInfo failed."))
+      (local-free (cffi:mem-ref security-attribs :pointer))
+      (unless (get-file-time file creation-time access-time modification-time)
+        (error "GetFileTime failed.")))
+    (let ((string (string->wstring (enpath file)))
+          (attributes nil))
+      (unwind-protect
+           (progn
+             (setf attributes (get-file-attributes string))
+             (when (= attributes #xFFFFFFFF)
+               (error "GetFileAttributes failed.")))
+        (cffi:foreign-free string))
+      (make-fields :access-time (filetime->universal access-time)
+                   :modification-time (filetime->universal modification-time)
+                   :access-time (filetime->universal access-time)
+                   :owner (sid-sub-authority user)
+                   :group (sid-sub-authority group)
+                   :attributes attributes))))

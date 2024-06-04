@@ -23,6 +23,15 @@
 (define-implementable (setf owner) (value file))
 (define-implementable attributes (file))
 (define-implementable (setf attributes) (value file))
+(define-implementable all-fields (file))
+
+(defstruct fields
+  (access-time 0 :type integer)
+  (modification-time 0 :type integer)
+  (creation-time 0 :type integer)
+  group
+  owner
+  (attributes 0 :type integer))
 
 (defun enbitfield (list &rest bits)
   (let ((int 0))

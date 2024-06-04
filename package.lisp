@@ -11,4 +11,12 @@
    #:attributes
    #:*system*
    #:encode-attributes
-   #:decode-attributes))
+   #:decode-attributes
+   #:all-fields
+   #:fields
+   #:fields-access-time
+   #:fields-modification-time
+   #:fields-creation-time
+   #:fields-group
+   #:fields-owner
+   #:fields-attributes))
