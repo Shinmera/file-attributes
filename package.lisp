@@ -11,4 +11,12 @@
    #:attributes
    #:*system*
    #:encode-attributes
-   #:decode-attributes))
+   #:decode-attributes
+   #:stat-file
+   #:stat-result
+   #:st-access-time
+   #:st-modification-time
+   #:st-creation-time
+   #:st-group
+   #:st-owner
+   #:st-attributes))
