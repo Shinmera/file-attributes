@@ -17,4 +17,4 @@
                (:file "mezzano" :if-feature :mezzano)
                (:file "documentation"))
   :depends-on (:documentation-utils
-               :cffi))
+               (:feature (:not :mezzano) :cffi)))
