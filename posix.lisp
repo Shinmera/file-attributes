@@ -2,7 +2,7 @@
 
 ;; Linux 5.7.7 AMD64
 #+linux
-(cffi:defcstruct (stat :size 144)
+(cffi:defcstruct (stat :size 144 :conc-name stat-)
   (mode    :uint32 :offset 24)
   (uid     :uint32 :offset 28)
   (gid     :uint32 :offset 32)
@@ -12,7 +12,7 @@
 
 ;; OS X 10.14
 #+darwin
-(cffi:defcstruct (stat :size 144)
+(cffi:defcstruct (stat :size 144 :conc-name stat-)
   (mode    :uint16 :offset  4)
   (uid     :uint32 :offset 16)
   (gid     :uint32 :offset 20)
@@ -22,7 +22,7 @@
 
 ;; FreeBSD 12.1 AMD64
 #+freebsd
-(cffi:defcstruct (stat :size 224)
+(cffi:defcstruct (stat :size 224 :conc-name stat-)
   (mode    :uint16 :offset 24)
   (uid     :uint32 :offset 28)
   (gid     :uint32 :offset 32)
@@ -32,7 +32,7 @@
 
 ;; OpenBSD 7.1 AMD64
 #+openbsd
-(cffi:defcstruct (stat :size 128)
+(cffi:defcstruct (stat :size 128 :conc-name stat-)
   (mode    :uint32 :offset  0)
   (uid     :uint32 :offset 20)
   (gid     :uint32 :offset 24)
@@ -99,35 +99,40 @@
   (cchmod (enpath path) mode))
 
 (define-implementation access-time (file)
-  (unix->universal (getf (stat file) 'atime)))
+  (with-stat (stat file)
+    (unix->universal (stat-atime stat))))
 
 (define-implementation (setf access-time) (value file)
   (utimes file value (modification-time file))
   value)
 
 (define-implementation modification-time (file)
-  (unix->universal (getf (stat file) 'mtime)))
+  (with-stat (stat file)
+    (unix->universal (stat-mtime stat))))
 
 (define-implementation (setf modification-time) (value file)
   (utimes file (access-time file) value)
   value)
 
 (define-implementation group (file)
-  (getf (stat file) 'gid))
+  (with-stat (stat file)
+    (stat-gid stat)))
 
 (define-implementation (setf group) (value file)
   (chown file (owner file) value)
   value)
 
 (define-implementation owner (file)
-  (getf (stat file) 'uid))
+  (with-stat (stat file)
+    (stat-uid stat)))
 
 (define-implementation (setf owner) (value file)
   (chown file value (group file))
   value)
 
 (define-implementation attributes (file)
-  (getf (stat file) 'mode))
+  (with-stat (stat file)
+    (stat-mode stat)))
 
 (define-implementation (setf attributes) (value file)
   (chmod file value))
@@ -135,9 +140,9 @@
 (define-implementation all-fields (file)
   (with-stat (ptr file)
     (cffi:with-foreign-slots ((mode uid gid atime mtime) ptr (:struct stat))
-      (make-stat-result :access-time (unix->universal (getf atime 'sec))
-                        :modification-time (unix->universal (getf mtime 'sec))
-                        :creation-time 0
-                        :group gid
-                        :owner uid
-                        :attributes mode))))
+      (make-fields :access-time (unix->universal atime)
+                   :modification-time (unix->universal mtime)
+                   :creation-time 0
+                   :group gid
+                   :owner uid
+                   :attributes mode))))
