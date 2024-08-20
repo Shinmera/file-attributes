@@ -7,7 +7,7 @@
 
 int main(){
   struct stat stat;
-  printf("(cffi:defcstruct (%s :size %i)", "stat", sizeof(struct stat));
+  printf("(cffi:defcstruct (%s :size %i :conc-name stat-)", "stat", sizeof(struct stat));
   print_member(stat, st_mode);
   print_member(stat, st_uid);
   print_member(stat, st_gid);

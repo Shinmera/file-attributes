@@ -11,7 +11,7 @@
   :defsystem-depends-on (:trivial-features)
   :components ((:file "package")
                (:file "protocol")
-               (:file "posix" :if-feature :unix)
+               (:file "posix" :if-feature (:or :unix :nx))
                (:file "linux" :if-feature :linux)
                (:file "windows" :if-feature :windows)
                (:file "mezzano" :if-feature :mezzano)

@@ -40,6 +40,16 @@
   (atime   :uint64 :offset 32)
   (mtime   :uint64 :offset 48))
 
+;; NX 17.5.4
+#+nx
+(cffi:defcstruct (stat :size 128 :conc-name stat-)
+  (mode    :uint32 :offset 16)
+  (uid     :uint32 :offset 24)
+  (gid     :uint32 :offset 28)
+  (size    :uint64 :offset 48)
+  (atime   :uint64 :offset 72)
+  (mtime   :uint64 :offset 88))
+
 (cffi:defcfun (cgstat "stat") :int
   (path :string)
   (buffer :pointer))
