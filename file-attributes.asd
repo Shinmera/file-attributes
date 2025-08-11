@@ -4,9 +4,9 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "Access to file attributes (uid, gid, atime, mtime, mod)"
-  :homepage "https://shinmera.github.io/file-attributes"
-  :bug-tracker "https://github.com/Shinmera/file-attributes/issues"
-  :source-control (:git "https://github.com/Shinmera/file-attributes.git")
+  :homepage "https://shinmera.com/docs/file-attributes"
+  :bug-tracker "https://shinmera.com/project/file-attributes/issues"
+  :source-control (:git "https://shinmera.com/project/file-attributes.git")
   :serial T
   :defsystem-depends-on (:trivial-features)
   :components ((:file "package")
